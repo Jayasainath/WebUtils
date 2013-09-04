@@ -37,21 +37,22 @@ DateUtils = function(){
 		if(value && typeof value === "string"){
 			var splitter = /(\-|\/|\\|\.|\:|\,|\_|\*|\^|\#|\s)/g;
 			var splitArray = inputFormat.split(splitter);
-			var splitArrayLength = splitArray.length, i = 0;
+			var splitArrayLength = splitArray.length, i = 0, split_array_i, split_value;
 			
 			for (; i < splitArrayLength; i+=2){
-				var split_value = value.split(splitter)[i];
-				if(splitArray[i].match(/(?:d|dd)/g)){
+				split_value = value.split(splitter)[i];
+				split_array_i = splitArray[i];
+				if(split_array_i.match(/(?:d|dd)/g)){
 					if(!isNaN(parseInt(split_value))) _t.setInputDate(parseInt(split_value));
-				}else if(splitArray[i].match(/(?:D|DD)/g)){
+				}else if(split_array_i.match(/(?:D|DD)/g)){
 					if(!isNaN(parseInt(split_value))) _t.setInputDay(parseInt(split_value));
 					
 					// check if the day name matches with the date, month and year combination
 					// if there's a match, create a date object, else throw an error
 
-				}else if(splitArray[i].match(/(?:m|mm)/g)){
+				}else if(split_array_i.match(/(?:m|mm)/g)){
 					if(!isNaN(parseInt(split_value))) _t.setInputMonth(parseInt(split_value)-1);
-				}else if(splitArray[i].match(/(?:M|MM)/g)){
+				}else if(split_array_i.match(/(?:M|MM)/g)){
 					if(split_value.length > 3){
 						var index = monthNames.indexOf(split_value.toLowerCase());
 						_t.setInputMonth(index);
@@ -59,44 +60,53 @@ DateUtils = function(){
 						var index = monthNamesShort.indexOf(split_value.toLowerCase());
 						_t.setInputMonth(index);
 					}
-				}else if(splitArray[i].match(/(?:yy|yyyy)/ig)){
+				}else if(split_array_i.match(/(?:yy|yyyy)/ig)){
 					split_value = split_value.length > 2 ? split_value : "20"+split_value;
 					if(!isNaN(parseInt(split_value))) _t.setInputYear(parseInt(split_value));
 				}
 			}
 			_t.createDateObjectFor();
 			console.log("Date Object: "+_t.getDateObject());
+			console.log("Date Out: "+_t.formatOutput(outputFormat));
 		}else if(value && typeof value == "object"){
 
 		}
-
 	};
 
 	_t.formatOutput = function(outputFormat){
-		if(value && typeof value === "string"){
-			var dateStr = "", dateObject = _t.getDateObject();
-			var splitter = /(\-|\/|\\|\.|\:|\,|\_|\*|\^|\#|\s)/g;
+		if(outputFormat && typeof outputFormat === "string"){
+			var dateStr = "", dateObject = _t.getDateObject(), splitter = /(\-|\/|\\|\.|\:|\,|\_|\*|\^|\#|\s)/g;
 			var splitArray = outputFormat.split(splitter);
-			var splitArrayLength = splitArray.length, i = 0;
+			var splitArrayLength = splitArray.length, i = 0, split_array_i;
 			for (; i < splitArrayLength; i+=2){
-				if(splitArray[i].match(/(?:d|dd)/g)){
+				split_array_i = splitArray[i];
+				if(split_array_i.match(/(?:d|dd)/g)){
 					var date = dateObject.getDate().toString();
-					if(splitArray[i].length > 1){
+					if(split_array_i.length > 1){
 						date = date.length < 2 ? "0" + date : date;
 					}
 					dateStr += date;
-				}else if(splitArray[i].match(/(?:D|DD)/g)){
-					var day = _t.getDateObject().getDay();
-					day = splitArray[i].length > 1 ? dayNames[day] : dayNamesShort[day];
+				}else if(split_array_i.match(/(?:D|DD)/g)){
+					var day = dateObject.getDay();
+					day = split_array_i.length > 1 ? dayNames[day] : dayNamesShort[day];
 					dateStr += day;
-				}else if(splitArray[i].match(/(?:m|mm)/g)){
-					
-				}else if(splitArray[i].match(/(?:M|MM)/g)){
-					
-				}else if(splitArray[i].match(/(?:yy|yyyy)/ig)){
-					
+				}else if(split_array_i.match(/(?:m|mm)/g)){
+					var month = (dateObject.getMonth()+1).toString();
+					if(split_array_i.length > 1){
+						month = month.length < 2 ? "0" + month : month; 	
+					}
+					dateStr += month;
+				}else if(split_array_i.match(/(?:M|MM)/g)){
+					var Month = dateObject.getMonth();
+					Month = split_array_i.length > 1 ? monthNames[Month] : monthNamesShort[Month];
+					dateStr += Month;
+				}else if(split_array_i.match(/(?:yy|yyyy)/ig)){
+					dateStr += dateObject.getFullYear().toString();
 				}
 			}
+			return dateStr;
+		}else{
+			throw new Error("Invalid format");
 		}
 	};
 
@@ -115,7 +125,7 @@ DateUtils = function(){
 
 (function(){
 	var df = DateUtils;
-	df.format("dec-11-13", "D-mm-dd-yy", "M,dd-yy");
+	df.format("Nov-1-13", "DD, d-M-yyyy", "M,dd-yy");
 })();
 
 
