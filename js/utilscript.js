@@ -1,5 +1,30 @@
+/*
+	General Puropse String Utils
+*/
+
+StringUtils = function(){
+	var _t = this;
+	_t.toSentenceCase = function(value){
+		if(value && typeof value === "string"){
+			return value.charAt(0).toUpperCase() + value.slice(1, value.length);
+		}
+	};
+
+	return {
+		toSentenceCase: toSentenceCase
+	}
+
+}();
+
+
+/*
+	Converts a given date (String Date) with the input format to the required format
+	Dependancy => StringUtils
+*/
+
+
 DateUtils = function(){
-	var _t = this, inputDay, inputDate, inputMonth, inputYear;
+	var _t = this, inputDay, inputDate, inputMonth, inputYear, su = StringUtils;
 	var dateObject = new Date();
 
 	var monthNamesShort = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
@@ -85,23 +110,27 @@ DateUtils = function(){
 					if(split_array_i.length > 1){
 						date = date.length < 2 ? "0" + date : date;
 					}
-					dateStr += date;
+					dateStr += splitArray[i+1] ? date + splitArray[i+1] : date;
 				}else if(split_array_i.match(/(?:D|DD)/g)){
 					var day = dateObject.getDay();
-					day = split_array_i.length > 1 ? dayNames[day] : dayNamesShort[day];
-					dateStr += day;
+					day = split_array_i.length > 1 ? su.toSentenceCase(dayNames[day]) : su.toSentenceCase(dayNamesShort[day]);
+					dateStr += splitArray[i+1] ? day + splitArray[i+1] : day;
 				}else if(split_array_i.match(/(?:m|mm)/g)){
 					var month = (dateObject.getMonth()+1).toString();
 					if(split_array_i.length > 1){
 						month = month.length < 2 ? "0" + month : month; 	
 					}
-					dateStr += month;
+					dateStr += splitArray[i+1] ? month + splitArray[i+1] : month;
 				}else if(split_array_i.match(/(?:M|MM)/g)){
 					var Month = dateObject.getMonth();
-					Month = split_array_i.length > 1 ? monthNames[Month] : monthNamesShort[Month];
-					dateStr += Month;
+					Month = split_array_i.length > 1 ? su.toSentenceCase(monthNames[Month]) : su.toSentenceCase(monthNamesShort[Month]);
+					dateStr += splitArray[i+1] ? Month + splitArray[i+1] : Month;
 				}else if(split_array_i.match(/(?:yy|yyyy)/ig)){
-					dateStr += dateObject.getFullYear().toString();
+					var year = dateObject.getFullYear().toString();
+					if(split_array_i.length < 4){
+						year = year.slice(2, year.length);
+					}
+					dateStr += splitArray[i+1] ? year + splitArray[i+1] : year;
 				}
 			}
 			return dateStr;
@@ -117,7 +146,6 @@ DateUtils = function(){
 	};
 
 	return {
-		getDateObject: getDateObject,
 		format: format
 	}
 
@@ -125,8 +153,10 @@ DateUtils = function(){
 
 (function(){
 	var df = DateUtils;
-	df.format("Nov-1-13", "DD, d-M-yyyy", "M,dd-yy");
+	df.format("Nov-1-13", "DD, dd-M-yy", "M,dd-yy");
 })();
+
+
 
 
 
@@ -165,19 +195,4 @@ OUTUT FORMAT
 
 Can be any of the above input formats in additon to the day name (D/DD)
 
-
-
-
 */
-
-
-
-
-
-
-
-
-
-
-
-
