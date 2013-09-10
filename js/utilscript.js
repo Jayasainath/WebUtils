@@ -4,14 +4,34 @@
 
 StringUtils = function(){
 	var _t = this;
+	
 	_t.toSentenceCase = function(value){
 		if(value && typeof value === "string"){
-			return value.charAt(0).toUpperCase() + value.slice(1, value.length);
+			var i = 0, sentenseCasedString = "", splitArray = value.split(" ");
+			var splitArrayLength = splitArray.length;
+			if(splitArrayLength > 1){
+				for (; i < splitArrayLength; i++){
+					sentenseCasedString += splitArray[i].charAt(0).toUpperCase() + splitArray[i].slice(1, splitArray[i].length);
+					sentenseCasedString += i < splitArrayLength-1 ? " " : "";
+				}
+				return sentenseCasedString;
+			}else return value.charAt(0).toUpperCase() + value.slice(1, value.length);
 		}
 	};
 
+	_t.reverseString = function(value){
+		if(value && typeof value === "string"){
+			var i = value.length, reversedString = "";
+			for(; i >= 0; i--) reversedString += value.charAt(i);
+			return reversedString;
+		}
+	};
+
+
+
 	return {
-		toSentenceCase: toSentenceCase
+		toSentenceCase: toSentenceCase,
+		reverseString: reverseString
 	}
 
 }();
@@ -24,15 +44,14 @@ StringUtils = function(){
 
 
 DateUtils = function(){
-	var _t = this, inputDay, inputDate, inputMonth, inputYear, su = StringUtils;
-	var dateObject = new Date();
+	var _t = this, inputDay, inputDate, inputMonth, inputYear, su = StringUtils, dateObject = new Date(), inputFormat, outputFormat;
 
 	var monthNamesShort = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
 	var monthNames = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october","november","december"];
 
 	var dayNamesShort = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
 	var dayNames = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
-	
+
 	_t.getInputDay = function(){ return _t.inputDay; };
 	_t.setInputDay = function(value){
 		if(value) _t.inputDay = value;
@@ -58,49 +77,70 @@ DateUtils = function(){
 		if(value) _t.dateObject = value;
 	};
 
+	_t.getInputFormat = function(){ return _t.inputFormat; };
+	_t.setInputFormat = function(value){
+		if(value && typeof value === "string") _t.inputFormat = value;
+	};
+
+	_t.getOutputFormat = function(){ return _t.outputFormat; };
+	_t.setOutputFormat = function(value){
+		if(value && typeof value === "string") _t.outputFormat = value;
+	};
+
 	_t.format = function(value, outputFormat, inputFormat){
 		if(value && typeof value === "string"){
-			var splitter = /(\-|\/|\\|\.|\:|\,|\_|\*|\^|\#|\s)/g;
-			var splitArray = inputFormat.split(splitter);
-			var splitArrayLength = splitArray.length, i = 0, split_array_i, split_value;
-			
-			for (; i < splitArrayLength; i+=2){
-				split_value = value.split(splitter)[i];
-				split_array_i = splitArray[i];
-				if(split_array_i.match(/(?:d|dd)/g)){
-					if(!isNaN(parseInt(split_value))) _t.setInputDate(parseInt(split_value));
-				}else if(split_array_i.match(/(?:D|DD)/g)){
-					if(!isNaN(parseInt(split_value))) _t.setInputDay(parseInt(split_value));
-					
-					// check if the day name matches with the date, month and year combination
-					// if there's a match, create a date object, else throw an error
+			if(inputFormat && typeof inputFormat === "string"){
+				_t.setInputFormat(inputFormat);
+				var splitter = /(\-|\/|\\|\.|\:|\,|\_|\*|\^|\#|\s)/g;
+				var splitArray = inputFormat.split(splitter);
+				var splitArrayLength = splitArray.length, i = 0, split_array_i, split_value;
+				
+				for (; i < splitArrayLength; i+=2){
+					split_value = value.split(splitter)[i];
+					split_array_i = splitArray[i];
+					if(split_array_i.match(/(?:d|dd)/g)){
+						if(!isNaN(parseInt(split_value))) _t.setInputDate(parseInt(split_value));
+					}else if(split_array_i.match(/(?:D|DD)/g)){
+						if(!isNaN(parseInt(split_value))) _t.setInputDay(parseInt(split_value));
+						
+						// check if the day name matches with the date, month and year combination
+						// if there's a match, create a date object, else throw an error
 
-				}else if(split_array_i.match(/(?:m|mm)/g)){
-					if(!isNaN(parseInt(split_value))) _t.setInputMonth(parseInt(split_value)-1);
-				}else if(split_array_i.match(/(?:M|MM)/g)){
-					if(split_value.length > 3){
-						var index = monthNames.indexOf(split_value.toLowerCase());
-						_t.setInputMonth(index);
-					}else if(split_value.length <= 3 && split_value.length > 0){
-						var index = monthNamesShort.indexOf(split_value.toLowerCase());
-						_t.setInputMonth(index);
+					}else if(split_array_i.match(/(?:m|mm)/g)){
+						if(!isNaN(parseInt(split_value))) _t.setInputMonth(parseInt(split_value)-1);
+					}else if(split_array_i.match(/(?:M|MM)/g)){
+						if(split_value.length > 3){
+							var index = monthNames.indexOf(split_value.toLowerCase());
+							_t.setInputMonth(index);
+						}else if(split_value.length <= 3 && split_value.length > 0){
+							var index = monthNamesShort.indexOf(split_value.toLowerCase());
+							_t.setInputMonth(index);
+						}
+					}else if(split_array_i.match(/(?:yy|yyyy)/ig)){
+						split_value = split_value.length > 2 ? split_value : "20"+split_value;
+						if(!isNaN(parseInt(split_value))) _t.setInputYear(parseInt(split_value));
 					}
-				}else if(split_array_i.match(/(?:yy|yyyy)/ig)){
-					split_value = split_value.length > 2 ? split_value : "20"+split_value;
-					if(!isNaN(parseInt(split_value))) _t.setInputYear(parseInt(split_value));
 				}
-			}
-			_t.createDateObjectFor();
-			console.log("Date Object: "+_t.getDateObject());
-			console.log("Date Out: "+_t.formatOutput(outputFormat));
-		}else if(value && typeof value == "object"){
+				
+				if(_t.getInputYear() && (_t.getInputMonth() || _t.getInputMonth() === 0) && _t.getInputDate){	
+					_t.setDateObject(new Date(_t.getInputYear(), _t.getInputMonth(), _t.getInputDate()));
+				}
 
+			}else{
+				throw new Error("Invalid input format");	
+			}
+		}else if(value && value instanceof Date){
+			// Discard the input format
+			_t.setDateObject(value);
 		}
+		
+		console.log("Out: "+_t.formatOutput(outputFormat));
 	};
 
 	_t.formatOutput = function(outputFormat){
 		if(outputFormat && typeof outputFormat === "string"){
-			var dateStr = "", dateObject = _t.getDateObject(), splitter = /(\-|\/|\\|\.|\:|\,|\_|\*|\^|\#|\s)/g;
+			_t.setOutputFormat(outputFormat);
+			var dateStr = "", dateObject = _t.getDateObject(), splitter = /(\-|\/|\\|\.|\:|(?:\,\s|\,)|\_|\*|\^|\#|\s)/g;
 			var splitArray = outputFormat.split(splitter);
 			var splitArrayLength = splitArray.length, i = 0, split_array_i;
 			for (; i < splitArrayLength; i+=2){
@@ -135,14 +175,12 @@ DateUtils = function(){
 			}
 			return dateStr;
 		}else{
-			throw new Error("Invalid format");
+			throw new Error("Invalid output format");
 		}
 	};
 
 	_t.createDateObjectFor = function(){
-		if(_t.getInputYear() && (_t.getInputMonth() || _t.getInputMonth() === 0) && _t.getInputDate){	
-			_t.setDateObject(new Date(_t.getInputYear(), _t.getInputMonth(), _t.getInputDate()));
-		}
+		
 	};
 
 	return {
@@ -153,7 +191,7 @@ DateUtils = function(){
 
 (function(){
 	var df = DateUtils;
-	df.format("Nov-1-13", "DD, dd-M-yy", "M,dd-yy");
+	df.format("Nov-1-13", "D, dd-M-yy", "M,dd-yy");
 })();
 
 
