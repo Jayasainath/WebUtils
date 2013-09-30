@@ -1,5 +1,5 @@
 /*
-	General Puropse String Utils
+	String Utils - General Puropse
 */
 
 StringUtils = function(){
@@ -27,13 +27,35 @@ StringUtils = function(){
 		}
 	};
 
-
-
 	return {
 		toSentenceCase: toSentenceCase,
 		reverseString: reverseString
 	}
 
+}();
+
+
+/*	
+	Object Utils - General Purpose 
+*/
+
+ObjectUtils = function(){
+	var _t = this;
+
+	_t.getLength = function(o){
+		if(typeof o === "object"){
+			if(false) return Object.keys(o).length;
+			else{
+				var length = 0, i, item;
+				for(i in o)  length++;
+				return length;
+			}
+		}else throw new TypeError("Cannot convert " + typeof o + " to object");
+	};
+
+	return {
+		length: getLength
+	}
 }();
 
 
